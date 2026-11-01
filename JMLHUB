@@ -1,0 +1,221 @@
+
+-- JMLHUB V1.0
+-- Made by JML
+-- Interface pour Roblox Studio
+
+local Players = game:GetService("Players")
+local UserInputService = game:GetService("UserInputService")
+
+local player = Players.LocalPlayer
+
+local gui = Instance.new("ScreenGui")
+gui.Name = "JMLHUB"
+gui.ResetOnSpawn = false
+gui.Parent = player:WaitForChild("PlayerGui")
+
+local main = Instance.new("Frame")
+main.Name = "Main"
+main.Size = UDim2.fromOffset(270, 290)
+main.Position = UDim2.new(0.5, -135, 0.5, -145)
+main.BackgroundColor3 = Color3.fromRGB(17, 12, 25)
+main.BorderSizePixel = 0
+main.Parent = gui
+
+local corner = Instance.new("UICorner")
+corner.CornerRadius = UDim.new(0, 10)
+corner.Parent = main
+
+local stroke = Instance.new("UIStroke")
+stroke.Color = Color3.fromRGB(145, 55, 220)
+stroke.Thickness = 2
+stroke.Parent = main
+
+-- Header
+local header = Instance.new("TextLabel")
+header.Size = UDim2.new(1, 0, 0, 38)
+header.BackgroundColor3 = Color3.fromRGB(35, 17, 52)
+header.Text = "JMLHUB"
+header.TextColor3 = Color3.fromRGB(220, 170, 255)
+header.Font = Enum.Font.GothamBold
+header.TextSize = 20
+header.Parent = main
+
+-- Drag
+local dragging = false
+local dragStart, startPos
+
+header.InputBegan:Connect(function(input)
+    if input.UserInputType == Enum.UserInputType.MouseButton1
+    or input.UserInputType == Enum.UserInputType.Touch then
+        dragging = true
+        dragStart = input.Position
+        startPos = main.Position
+    end
+end)
+
+UserInputService.InputChanged:Connect(function(input)
+    if dragging and (
+        input.UserInputType == Enum.UserInputType.MouseMovement
+        or input.UserInputType == Enum.UserInputType.Touch
+    ) then
+        local delta = input.Position - dragStart
+        main.Position = UDim2.new(
+            startPos.X.Scale,
+            startPos.X.Offset + delta.X,
+            startPos.Y.Scale,
+            startPos.Y.Offset + delta.Y
+        )
+    end
+end)
+
+UserInputService.InputEnded:Connect(function(input)
+    if input.UserInputType == Enum.UserInputType.MouseButton1
+    or input.UserInputType == Enum.UserInputType.Touch then
+        dragging = false
+    end
+end)
+
+local function createToggle(name, y, default)
+    local button = Instance.new("TextButton")
+    button.Size = UDim2.new(1, -20, 0, 32)
+    button.Position = UDim2.fromOffset(10, y)
+    button.BackgroundColor3 = Color3.fromRGB(38, 22, 53)
+    button.TextColor3 = Color3.new(1, 1, 1)
+    button.Font = Enum.Font.GothamBold
+    button.TextSize = 12
+    button.Parent = main
+
+    local enabled = default
+
+    local function update()
+        button.Text = name .. "     " .. (enabled and "ON" or "OFF")
+        button.BackgroundColor3 = enabled
+            and Color3.fromRGB(95, 35, 145)
+            or Color3.fromRGB(38, 22, 53)
+    end
+
+    button.MouseButton1Click:Connect(function()
+        enabled = not enabled
+        update()
+    end)
+
+    update()
+end
+
+local function createSlider(name, y, initial)
+    local label = Instance.new("TextLabel")
+    label.Size = UDim2.new(1, -20, 0, 18)
+    label.Position = UDim2.fromOffset(10, y)
+    label.BackgroundTransparency = 1
+    label.TextColor3 = Color3.new(1, 1, 1)
+    label.Font = Enum.Font.GothamBold
+    label.TextSize = 12
+    label.Text = name .. "     " .. initial
+    label.TextXAlignment = Enum.TextXAlignment.Left
+    label.Parent = main
+
+    local bar = Instance.new("TextButton")
+    bar.Size = UDim2.new(1, -20, 0, 8)
+    bar.Position = UDim2.fromOffset(10, y + 22)
+    bar.BackgroundColor3 = Color3.fromRGB(65, 42, 80)
+    bar.Text = ""
+    bar.AutoButtonColor = false
+    bar.Parent = main
+
+    local fill = Instance.new("Frame")
+    fill.Size = UDim2.new(initial / 100, 0, 1, 0)
+    fill.BackgroundColor3 = Color3.fromRGB(190, 65, 255)
+    fill.BorderSizePixel = 0
+    fill.Parent = bar
+
+    local function setValue(x)
+        local percent = math.clamp(
+            (x - bar.AbsolutePosition.X) / bar.AbsoluteSize.X,
+            0, 1
+        )
+        local value = math.floor(percent * 100 + 0.5)
+        fill.Size = UDim2.fromScale(percent, 1)
+        label.Text = name .. "     " .. value
+    end
+
+    bar.Activated:Connect(function()
+        setValue(UserInputService:GetMouseLocation().X)
+    end)
+end
+
+createToggle("Auto Flash", 50, true)
+createSlider("Trigger Percent", 91, 82)
+createToggle("Auto Giant Potion", 135, true)
+createToggle("Flash Lagger", 174, true)
+createSlider("Lagger Power", 216, 50)
+
+-- Align button
+local align = Instance.new("TextButton")
+align.Size = UDim2.new(1, -20, 0, 30)
+align.Position = UDim2.fromOffset(10, 257)
+align.BackgroundColor3 = Color3.fromRGB(70, 30, 105)
+align.Text = "ALIGN"
+align.TextColor3 = Color3.new(1, 1, 1)
+align.Font = Enum.Font.GothamBold
+align.TextSize = 13
+align.Parent = main
+
+align.MouseButton1Click:Connect(function()
+    main.Position = UDim2.new(0.5, -135, 0.5, -145)
+end)
+
+print("JMLHUB V1.0 loaded!")
+
+-- Bouton fermer
+local close = Instance.new("TextButton")
+close.Size = UDim2.fromOffset(35, 35)
+close.Position = UDim2.new(1, -38, 0, 1)
+close.BackgroundColor3 = Color3.fromRGB(120, 25, 45)
+close.Text = "X"
+close.TextColor3 = Color3.new(1, 1, 1)
+close.Font = Enum.Font.GothamBold
+close.TextSize = 18
+close.Parent = main
+
+local closeCorner = Instance.new("UICorner")
+closeCorner.CornerRadius = UDim.new(0, 8)
+closeCorner.Parent = close
+
+close.MouseButton1Click:Connect(function()
+    gui:Destroy()
+end)
+
+-- Bouton fermer
+local close = Instance.new("TextButton")
+close.Size = UDim2.fromOffset(35, 35)
+close.Position = UDim2.new(1, -38, 0, 1)
+close.BackgroundColor3 = Color3.fromRGB(120, 25, 45)
+close.Text = "X"
+close.TextColor3 = Color3.new(1, 1, 1)
+close.Font = Enum.Font.GothamBold
+close.TextSize = 18
+close.Parent = main
+
+close.MouseButton1Click:Connect(function()
+    main.Visible = false
+end)
+
+-- Bouton pour rouvrir JMLHUB
+local reopen = Instance.new("TextButton")
+reopen.Name = "JMLButton"
+reopen.Size = UDim2.fromOffset(55, 55)
+reopen.Position = UDim2.new(0, 20, 0.5, 0)
+reopen.BackgroundColor3 = Color3.fromRGB(90, 30, 140)
+reopen.Text = "JML"
+reopen.TextColor3 = Color3.new(1, 1, 1)
+reopen.Font = Enum.Font.GothamBold
+reopen.TextSize = 17
+reopen.Parent = gui
+
+local corner = Instance.new("UICorner")
+corner.CornerRadius = UDim.new(1, 0)
+corner.Parent = reopen
+
+reopen.MouseButton1Click:Connect(function()
+    main.Visible = true
+end)
